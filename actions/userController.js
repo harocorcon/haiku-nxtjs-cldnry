@@ -43,7 +43,7 @@ import {redirect} from "next/navigation"
     )
 
     // log the user in by giving them a cookie
-    cookies().set("ourhaikuapp", ourTokenValue, {
+    await cookies().set("ourhaikuapp", ourTokenValue, {
         httpOnly: true,
         sameSite: "strict",
         maxAge: 60 * 60 * 24,

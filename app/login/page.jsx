@@ -2,7 +2,7 @@
 import { useActionState } from "react"
 import { login } from "../../actions/userController"
 
-export default function Login(){
+export default function Page(){
     const [formState, formAction] = useActionState(login, {})
     return(
         <>
