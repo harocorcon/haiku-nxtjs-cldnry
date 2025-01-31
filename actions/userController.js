@@ -1,11 +1,63 @@
  "use server"
 
- import { getCollection } from "../lib/db.js";
+import { getCollection } from "../lib/db.js";
 import bcrypt from 'bcrypt';
+import { cookies } from "next/headers.js";
+import jwt from "jsonwebtoken";
+import {redirect} from "next/navigation"
+
  function isAlphaNumeric(x) {
     const regex = /^[a-zA-Z0-9]*$/
     return regex.test(x);
  }
+
+ export const login = async function (prevState, formData) {
+    const failObject = {
+        success: false,
+        message: "Invalid username/password."
+    }
+    const ourUser = {
+        username: formData.get("username"),
+        password: formData.get("password")
+    }
+
+    if(typeof ourUser.username != "string") ourUser.username = "";
+    if(typeof ourUser.password != "string") ourUser.password = "";
+
+    const collection = await getCollection("users")
+    const user = await collection.findOne({username: ourUser.username})
+
+    if(!user)
+        return failObject
+
+    const matchOrNot = bcrypt.compareSync(ourUser.password, user.password)
+    if(!matchOrNot)
+        return failObject
+
+    // create jwt value
+    const ourTokenValue = jwt.sign({
+            userId: user._id, 
+            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24
+        }, 
+        process.env.JWTSECRET
+    )
+
+    // log the user in by giving them a cookie
+    cookies().set("ourhaikuapp", ourTokenValue, {
+        httpOnly: true,
+        sameSite: "strict",
+        maxAge: 60 * 60 * 24,
+        secure: true
+    })
+
+    return redirect("/")
+    
+ }
+
+export const logout = async function() {
+    (await cookies()).delete("ourhaikuapp")
+    redirect("/")
+}
 
  export const register = async function (prevState, formData) {
     const errors = {};
@@ -25,6 +77,14 @@ import bcrypt from 'bcrypt';
     if(ourUser.username.length > 30) errors.username = "Username cannot exceed 30 characters.";
     if(!isAlphaNumeric(ourUser.username)) errors.username = "No special characters please."
     if(ourUser.username == "") errors.username = "Please provide username.";
+
+    // see if username already exists or not
+    const usersCollection = await getCollection("users")
+    const usernameInQuestion = await usersCollection.findOne({ username: ourUser.username})
+    if(usernameInQuestion){
+        errors.username = "That username is already in use."
+    }
+
     
     if(ourUser.password.length < 8) errors.password = "Password must be at least 12 characters.";
     if(ourUser.password.length > 50) errors.password = "Password cannot exceed 50 characters.";
@@ -42,10 +102,24 @@ import bcrypt from 'bcrypt';
     ourUser.password = bcrypt.hashSync(ourUser.password, salt);
 
     // store to database
-    const usersCollection = await getCollection("users")
-    await usersCollection.insertOne(ourUser)
+    const newUser = await usersCollection.insertOne(ourUser)
+    const userId = newUser.insertedId.toString()
+
+    // create our JWT value
+    const ourTokenValue = jwt.sign({
+            userId: userId, 
+            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24
+        }, 
+        process.env.JWTSECRET
+    )
 
     // log the user in by giving them a cookie
+    await cookies().set("ourhaikuapp", ourTokenValue, {
+        httpOnly: true,
+        sameSite: "strict",
+        maxAge: 60 * 60 * 24,
+        secure: true
+    })
 
     return {
         success: true
