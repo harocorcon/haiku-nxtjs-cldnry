@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb"
 import { getCollection } from "../lib/db"
+import Link from "next/link"
 
 async function getHaikus(id){
     const collection = await getCollection("haikus")
@@ -25,6 +26,7 @@ export default async function Dashboard(props){
                         <br />
                         {haiku.line3}
                         <br />
+                        <Link href={`/edit-haiku/${haiku._id.toString()}`}>Edit</Link>
                         <hr />
                     </div>
                 )
