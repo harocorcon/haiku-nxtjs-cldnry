@@ -73,3 +73,36 @@ export const createHaiku = async function(prevState, formData) {
     const newHaiku = await haikuCollection.insertOne(results.ourHaiku)
     return redirect("/")
 }
+
+export const editHaiku = async function(prevState, formData) {
+    const user = await getUserFromCookie()
+
+    if(!user){
+        return redirect("/")
+    }
+
+    const results = await sharedHaikuLogic(formData, user)
+
+    if(results.errors.line1 || results.errors.line2 || results.errors.line3){
+        return { errors: results.errors }
+    }
+
+    // update haiku
+    const haikusCollection = await getCollection("haikus")
+    let haikuId = formData.get("haikuId")
+    if(typeof haikuId != "string") haikuId=""
+
+    // make sure you're the author of this post, otherwise, operation fail
+    const haikuInQuestion = await haikusCollection
+        .findOne({
+            _id: ObjectId.createFromHexString(haikuId)
+        })
+
+    if(haikuInQuestion.author.toString() !== user.userId) {
+        return redirect("/")
+    }
+    
+    await haikusCollection.findOneAndUpdate({_id: ObjectId.createFromHexString(haikuId)}, {$set: results.ourHaiku})
+
+    return redirect("/")
+}

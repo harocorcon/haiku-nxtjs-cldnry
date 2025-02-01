@@ -1,15 +1,17 @@
 "use client"
 
 import { useActionState } from "react"
-import { createHaiku } from "../actions/haikuController"
+import { createHaiku, editHaiku } from "../actions/haikuController"
 
-export default function HaikuForm(){
-    const [formState, formAction] = useActionState(createHaiku, {})
+export default function HaikuForm(props){
+  let actualAction = props.action === "create"? createHaiku: editHaiku;
+
+    const [formState, formAction] = useActionState(actualAction, {})
 
     return (
         <form action={formAction} className="max-w-xs mx-auto">
             <div className="mb-3">
-                <input name="line1" autoComplete="off" type="text" placeholder="Line #1" className="input input-bordered w-full max-w-xs" />
+                <input defaultValue={props.haiku?.line1} name="line1" autoComplete="off" type="text" placeholder="Line #1" className="input input-bordered w-full max-w-xs" />
                 {formState.errors?.line1 && (
                     <div role="alert" className="alert alert-error">
                     <svg
@@ -28,7 +30,7 @@ export default function HaikuForm(){
                 )}
             </div>
             <div className="mb-3">
-                <input name="line2" autoComplete="off" type="text" placeholder="Line #2" className="input input-bordered w-full max-w-xs" />
+                <input defaultValue={props.haiku?.line2} name="line2" autoComplete="off" type="text" placeholder="Line #2" className="input input-bordered w-full max-w-xs" />
                 {formState.errors?.line2 && (
                     <div role="alert" className="alert alert-error">
                     <svg
@@ -47,7 +49,7 @@ export default function HaikuForm(){
                 )}
             </div>
             <div className="mb-3">
-                <input name="line3" autoComplete="off" type="text" placeholder="Line #3" className="input input-bordered w-full max-w-xs" />
+                <input defaultValue={props.haiku?.line3} name="line3" autoComplete="off" type="text" placeholder="Line #3" className="input input-bordered w-full max-w-xs" />
                 {formState.errors?.line3 && (
                     <div role="alert" className="alert alert-error">
                     <svg
@@ -65,6 +67,7 @@ export default function HaikuForm(){
                   </div>
                 )}
             </div>
+            <input type="hidden" name="haikuId" defaultValue={props.haiku?._id.toString()} />
             <button className="btn btn-primary">Submit</button>
         </form>
     )
