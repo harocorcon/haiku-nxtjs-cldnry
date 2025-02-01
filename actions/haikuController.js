@@ -106,3 +106,28 @@ export const editHaiku = async function(prevState, formData) {
 
     return redirect("/")
 }
+
+export const deleteHaiku = async function(formData) {
+    const user = await getUserFromCookie()
+    if(!user){
+        redirect("/")
+    }
+
+    const haikusCollection = await getCollection("haikus")
+    let haikuId = formData.get("id")
+    if(typeof haikuId != "string") haikuId=""
+console.log("haikuid ", haikuId)
+    // make sure you're the author of this post, otherwise, operation fail
+    const haikuInQuestion = await haikusCollection
+        .findOne({
+            _id: ObjectId.createFromHexString(haikuId)
+        })
+
+    if(haikuInQuestion.author.toString() !== user.userId) {
+        return redirect("/")
+    }
+    
+    await haikusCollection.deleteOne({_id: ObjectId.createFromHexString(haikuId)})
+
+    return redirect("/")
+}

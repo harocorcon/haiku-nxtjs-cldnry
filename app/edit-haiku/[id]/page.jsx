@@ -8,7 +8,7 @@ async function getDoc(id) {
     const haikusCollection = await getCollection("haikus")
     
     const result = await haikusCollection.findOne({_id: ObjectId.createFromHexString(id)})
-    console.log("result ", result)
+    
     return {
         ...result,
         _id: result._id.toString(), // ✅ Convert to string
@@ -21,7 +21,7 @@ export default async function Page({ params }) {
     const doc = await getDoc(id)
 
     const user = await getUserFromCookie()
-    console.log("user ", user)
+
     if(user?.userId !== doc.author.toString()){
         return redirect("/")
     }
