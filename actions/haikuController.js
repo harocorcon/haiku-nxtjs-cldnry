@@ -4,6 +4,13 @@ import { redirect } from "next/navigation"
 import { getUserFromCookie } from "../lib/getUser"
 import { ObjectId } from "mongodb"
 import { getCollection } from "../lib/db"
+import cloudinary from "cloudinary"
+
+const cloudinaryConfig = cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 function isAphaNumericWithBasics(text) {
     const regex = /^[a-zA-Z0-9 .,]*$/
@@ -49,6 +56,14 @@ async function sharedHaikuLogic(formData,  user) {
     if(ourHaiku.line2.length == 0) errors.line2 = "This field is required."
     if(ourHaiku.line3.length == 0) errors.line3 = "This field is required."
 
+    // verify signature
+    const expectedSignature = cloudinary.utils.api_sign_request({
+        public_id: formData.get("public_id"),
+        version: formData.get("version"),
+    }, cloudinaryConfig.api_secret)
+    if(expectedSignature === formData.get("signature")){
+        ourHaiku.photo = formData.get("public_id")
+    }
     return {
         errors,
         ourHaiku
