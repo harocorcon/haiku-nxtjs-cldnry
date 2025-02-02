@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { v2 as cloudinary } from "cloudinary";
-import { getUserFromCookie } from "../../lib/getUser";
+import { getUserFromCookie } from "@/lib/getUser";
 
 
 cloudinary.config({
