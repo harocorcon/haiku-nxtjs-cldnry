@@ -1,10 +1,5 @@
 {
     "version": 2,
-    "functions": {
-      "pages/**/*.{js,ts,jsx,tsx}": {
-        "maxDuration": 45
-      }
-    },
     "builds": [
       {
         "src": "pages/**/*.{js,ts,jsx,tsx}",
