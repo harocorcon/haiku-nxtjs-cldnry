@@ -131,7 +131,6 @@ export const deleteHaiku = async function(formData) {
     const haikusCollection = await getCollection("haikus")
     let haikuId = formData.get("id")
     if(typeof haikuId != "string") haikuId=""
-console.log("haikuid ", haikuId)
     // make sure you're the author of this post, otherwise, operation fail
     const haikuInQuestion = await haikusCollection
         .findOne({
