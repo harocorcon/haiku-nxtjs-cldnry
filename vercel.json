@@ -1,8 +1,15 @@
 {
+    "version": 2,
     "functions": {
-      "api/**": {
+      "pages/**/*.{js,ts,jsx,tsx}": {
         "maxDuration": 45
       }
-    }
+    },
+    "builds": [
+      {
+        "src": "pages/**/*.{js,ts,jsx,tsx}",
+        "use": "@vercel/next"
+      }
+    ]
   }
   
